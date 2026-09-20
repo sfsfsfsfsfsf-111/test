@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AimLab</title>
+    <style>
+        :root {
+            --bg-color: #000000;       /* 黑色背景 */
+            --text-color: #ffffff;     /* 白色文字 */
+            --accent-color: #ffffff;   /* 白色圓圈 */
+            --card-bg: #111111;        /* 深灰色區塊背景 */
+            --border-color: #333333;   /* 邊框顏色 */
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .page {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(255,255,255,0.02);
+            width: 95%;
+            max-width: 850px; /* 放寬最大寬度以容納 4 倍大遊戲區 */
+            text-align: center;
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+        }
+
+        .active { display: flex; }
+
+        h1 { 
+            font-size: 28px; 
+            font-weight: 700; 
+            margin-bottom: 25px; 
+            letter-spacing: 1px;
+        }
+
+        p { 
+            color: #aaaaaa; 
+            font-size: 15px; 
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        
+        input, button {
+            width: 100%;
+            padding: 14px 20px;
+            margin: 10px 0;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+            background-color: #1a1a1a;
+            color: var(--text-color);
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            border-color: #666666;
+            background-color: #222222;
+        }
+
+        input::placeholder { color: #555555; }
+
+        button {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        button:hover { 
+            transform: translateY(-2px); 
+            background-color: #e5e5e5; 
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        /* 排行榜樣式 */
+        .leaderboard-list {
+            width: 100%;
+            max-height: 220px;
+            overflow-y: auto;
+            margin: 15px 0;
+            padding: 0;
+            list-style: none;
+            max-width: 400px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: #161616;
+            margin-bottom: 8px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+
+        /* 放大 4 倍的遊戲主控面板 */
+        #gameZone {
+            width: 100%;
+            max-width: 800px;  
+            height: 640px;     /* 高度調高為 640px，面積大幅增加 */
+            background: #080808;
+            border-radius: 20px;
+            position: relative;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            cursor: crosshair; /* 滑鼠游標變成十字準心 */
+        }
+
+        /* 白色圓圈樣式 */
+        .target-circle {
+            width: 65px;
+            height: 65px;
+            background-color: var(--accent-color);
+            color: #000000;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            font-size: 15px;
+            user-select: none;
+            box-shadow: 0 0 15px rgba(255,255,255,0.2);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
+            font-weight: bold;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+        }
+
+        /* 隱藏滾動條但保持功能 */
+        .leaderboard-list::-webkit-scrollbar { width: 4px; }
+        .leaderboard-list::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+        /* --- 生日頁面專屬（和倉薰子髮色與書信風）--- */
+        .birthday-page-bg {
+            background: linear-gradient(135deg, #E2D1F9 0%, #C5B4E3 100%) !important;
+            border: 2px solid #ffffff !important;
+            max-width: 500px !important; 
+            padding: 25px !important;
+        }
+
+        .letter-box {
+            width: 100%;
+            background-color: #fdfaf2; /* 復古白黃色書信紙 */
+            border-radius: 15px;
+            padding: 25px 20px;
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border: 1px dashed #dcd1b4; 
+        }
+
+        .letter-title {
+            color: #4a3728 !important;
+            font-size: 24px !important;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-family: "PingFang HK", "Heiti TC", sans-serif;
+        }
+
+        .letter-content {
+            max-height: 400px; /* 限制高度以允許上下滾動 */
+            overflow-y: auto;
+            text-align: left; 
+            padding-right: 10px;
+        }
+
+        .letter-text {
+            color: #4a3728 !important; /* 深啡色文字 */
+            font-size: 16px !important;
+            line-height: 1.8 !important;
+            margin-bottom: 18px !important;
+            font-family: "Noto Sans HK", "Microsoft JhengHei", sans-serif;
+            text-shadow: none !important;
+        }
+
+        .letter-photo-zone {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e8e2cf;
+            text-align: center;
+        }
+
+        .letter-photo-zone img {
+            width: 100%;
+            max-width: 350px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 5px solid #ffffff; 
+        }
+
+        .letter-content::-webkit-scrollbar { width: 5px; }
+        .letter-content::-webkit-scrollbar-thumb { background: #dcd1b4; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <!-- 頁面 1：輸入名字 -->
+    <div id="pageLogin" class="page active">
+        <h1>AimLab</h1>
+        <p>請輸入你的名字以加入排行榜：</p>
+        <input type="text" id="usernameInput" placeholder="輸入玩家名稱..." maxlength="10">
+        <button onclick="login()">進入主頁</button>
+    </div>
+
+    <!-- 頁面 2：主功能表 -->
+    <div id="pageMenu" class="page">
+        <h1>主選單</h1>
+        <p>當前玩家：<span id="playerNameDisplay" style="font-weight:bold; color:#ff7675;"></span></p>
+        <button onclick="switchPage('pageGame'); startGame();">開始遊戲</button>
+        <button onclick="switchPage('pageLeaderboard'); showLeaderboard();">查看排行榜</button>
+    </div>
+
+    <!-- 頁面 3：排行榜 -->
+    <div id="pageLeaderboard" class="page">
+        <h1>排行榜</h1>
+        <ul id="leaderboardList" class="leaderboard-list"></ul>
+        <button onclick="switchPage('pageMenu')">返回主選單</button>
+    </div>
+
+    <!-- 頁面 4：遊戲中 -->
+    <div id="pageGame" class="page">
+        <div class="stats">
+            <div>SCORE: <span id="scoreText" style="color: #00ff88;">0</span></div>
+            <div>LIFE: <span id="livesText" style="color: #ff3838;">❤️</span></div>
+        </div>
+        <!-- 🎯 傳入 event 參數，防範事件穿透冒泡導致的防誤擊 Bug -->
+        <div id="gameZone" onclick="missGame(event)"></div>
+        <p style="font-size: 12px; color: #555555; margin: 0;">圓圈內為倒計時。只有一條命，漏掉或點空即結束！</p>
+    </div>
+
+    <!-- 頁面 5：生日快樂頁面 (heiyi 專屬書信彩蛋) -->
+    <div id="pageBirthday" class="page birthday-page-bg">
+        <div class="letter-box">
+            <h1 class="letter-title">🎉 希兒，生日快樂！</h1>
+            
+            <div class="letter-content">
+                <p class="letter-text">致希兒：</p>
+                <p class="letter-text">雖然我哋認識嘅時間唔係算好長，但我就覺得你係一個幾好嘅人。</p>
+                <p class="letter-text">其實喺你生日之前，我原本諗住畫張圖送畀你當生日禮物算，但諗深一層……我畫功並非你哋呢啲常人可以欣賞，而你本身又畫得咁好，費事獻醜。所以最後我決定諗咗另一個方法，俾d驚喜畀你，希望你收到唔會嫌棄我畫功。</p>
+                <p class="letter-text">無論如何，真心祝你生日快樂、每日都遇到開心的事。</p>
+                
+                <!-- 預留的畫作圖片位置 -->
+                <div class="letter-photo-zone">
+                    <p style="color: #888888; font-size: 13px; margin-bottom: 10px;">👇 下方為預留的畫作位置（後續可自行更換連結）</p>
+                    <img id="birthdayGiftImage" src="https://unsplash.com" alt="生日禮物插畫">
+                </div>
+            </div>
+            
+            <p style="font-size: 11px; color: #999999; margin-top: 15px; text-align: center;">💡 溫馨提示：上方信件內容與圖片可上下滑動滾動</p>
+        </div>
+    </div>
+
+    <!-- 引入 Firebase 核心與 Realtime Database 的 SDK 庫 -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+
+    <script>
+        // ⚠️ 請在此處貼上你在 Firebase 官網複製拿到的專屬 config 設定 ⚠️
+        const firebaseConfig = {
+            apiKey: "AIzaSyB-8Utz-IpV5xr6x7k1Zoshrj7EudMfboQ",
+            authDomain: "brith-2ff44.firebaseapp.com",
+            databaseURL: "https://brith-2ff44-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "brith-2ff44",
+            storageBucket: "brith-2ff44.firebasestorage.app",
+            messagingSenderId: "1092751575666",
+            appId: "1:1092751575666:web:8c5b6ae675e289c98c10eb",
+            measurementId: "G-SVHYDHPJQ3"
+         };
+
+        // 🚀 智慧防卡死初始化：連得上用雲端，連不上自動轉本地備用
+        let database = null;
+        try {
+            if (typeof firebase !== 'undefined' && firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "你的_API_KEY") {
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                console.log("Firebase 雲端連線成功！");
+            } else {
+                console.log("未檢測到真實 Firebase 金鑰，目前運行於【本地測試模式】。");
+            }
+        } catch (e) {
+            console.error("Firebase 初始化失敗，自動啟用【本地備用模式】:", e);
+        }
+
+        let currentUser = "";
+        let score = 0;
+        let lives = 1;
+        let circleTimeout;
+        let countdownInterval;
+        let currentCircleTime = 5000; // 初始 5 秒
+        let timeLeft = 0;
+
+        // 頁面切換機制
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            } else {
+                console.error("找不到頁面 ID:", pageId);
+            }
+        }
+
+        // 登入驗證
+        function login() {
+            const nameInput = document.getElementById('usernameInput');
+            if (!nameInput) return;
+            
+            const name = nameInput.value.trim();
+            if(!name) { alert('請輸入名字以繼續！'); return; }
+            currentUser = name;
+            
+            const nameDisplay = document.getElementById('playerNameDisplay');
+            if (nameDisplay) nameDisplay.innerText = currentUser;
+            
+            switchPage('pageMenu');
+        }
+
+        // 初始化並開始遊戲
+        function startGame() {
+            score = 0;
+            lives = 1;
+            currentCircleTime = 5000; 
+            updateStats();
+            
+            // 防誤觸機制：清除舊的計時器並稍微延遲生成第一個圓圈
+            const gameZone = document.getElementById('gameZone');
+            if (gameZone) gameZone.innerHTML = "";
+            clearTimeout(circleTimeout);
+            clearInterval(countdownInterval);
+            
+            setTimeout(() => {
+                nextTarget();
+            }, 100);
+        }
+
+        function updateStats() {
+            const scoreText = document.getElementById('scoreText');
+            const livesText = document.getElementById('livesText');
+            if (scoreText) scoreText.innerText = score;
+            if (livesText) livesText.innerText = lives > 0 ? '❤️' : '🖤';
+        }
+
+        // 點擊黑盒（點空）觸發的失敗函數
+        function missGame(e) {
+            // 🛡️ 核心修復：如果點擊到的目標不是黑盒本體，代表只是點擊到了白色圓圈的事件冒泡，不觸發失敗
+            if (e && e.target !== document.getElementById('gameZone')) return;
+            
+            if (lives <= 0) return; 
+            lives = 0;
+            updateStats();
+            endGame();
+        }
+
+        // 產生下一個白色倒計時圓圈
+        function nextTarget() {
+            const gameZone = document.getElementById('gameZone');
+            if (!gameZone) return;
+            
+            gameZone.innerHTML = ""; 
+            clearTimeout(circleTimeout);
+            clearInterval(countdownInterval);
+
+            if (lives <= 0) {
+                endGame();
+                return;
+            }
+
+            // 計算隨機位置 (扣除圓圈大小 65px)
+            const maxX = gameZone.clientWidth - 65;
+            const maxY = gameZone.clientHeight - 65;
+            const randomX = Math.floor(Math.random() * maxX);
+            const randomY = Math.floor(Math.random() * maxY);
+
+            // 建立圓圈
+            const circle = document.createElement('div');
+            circle.className = 'target-circle';
+            circle.style.left = randomX + 'px';
+            circle.style.top = randomY + 'px';
+            
+            // 初始化倒計時數字
+            timeLeft = currentCircleTime / 1000;
+            circle.innerText = timeLeft.toFixed(2);
+
+            // 每 10 毫秒高頻更新小數點後兩位文字
+            const startTime = Date.now();
+            countdownInterval = setInterval(() => {
+                const elapsedTime = Date.now() - startTime;
+                timeLeft = Math.max(0, (currentCircleTime - elapsedTime) / 1000);
+                circle.innerText = timeLeft.toFixed(2);
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                }
+            }, 10);
+
+            // 圓圈點擊成功事件
+            circle.onclick = function(e) {
+                e.stopPropagation(); // 🎯 極重要：防止點擊事件穿透到大黑盒
+                score++;
+                
+                // 每次成功減少 0.5 秒 (500毫秒)，極限最低 1.0 秒 (1000毫秒)
+                currentCircleTime = Math.max(1000, currentCircleTime - 500);
+                
+                updateStats();
+                nextTarget();
+            };
+
+            gameZone.appendChild(circle);
+
+            // 點擊超時判斷 (超時直接歸零並觸發遊戲結束)
+            circleTimeout = setTimeout(() => {
+                lives = 0;
+                updateStats();
+                endGame();
+            }, currentCircleTime);
+        }
+
+        // 遊戲結束
+        function endGame() {
+            clearTimeout(circleTimeout);
+            clearInterval(countdownInterval);
+            const gameZone = document.getElementById('gameZone');
+            if (gameZone) gameZone.innerHTML = "";
+            
+            alert(`遊戲結束！你的最終得分是：${score}`);
+            saveScore(currentUser, score);
+
+            // 判斷是否為 heiyi，導向專屬頁面
+            if (currentUser.toLowerCase() === 'heiyi') {
+                switchPage('pageBirthday');
+            } else {
+                switchPage('pageMenu');
+            }
+        }
+
+        // 儲存分數（支援雲端/本地自動切換）
+        function saveScore(name, newScore) {
+            if (database) {
+                // ☁️ 雲端模式
+                const userRef = database.ref('leaderboard/' + name);
+                userRef.once('value').then((snapshot) => {
+                    const data = snapshot.val();
+                    if (!data || newScore > data.score) {
+                        userRef.set({ name: name, score: newScore, timestamp: Date.now() });
+                    }
+                });
+            } else {
+                // 💻 本地備用模式
+                let leaderboard = JSON.parse(localStorage.getItem('birthday_leaderboard')) || [];
+                const existingPlayer = leaderboard.find(p => p.name === name);
+                if (existingPlayer) {
+                    if (newScore > existingPlayer.score) existingPlayer.score = newScore;
+                } else {
+                    leaderboard.push({ name: name, score: newScore });
+                }
+                leaderboard.sort((a, b) => b.score - a.score);
+                localStorage.setItem('birthday_leaderboard', JSON.stringify(leaderboard));
+            }
+        }
+
+        // 顯示排行榜（支援雲端/本地自動切換）
+        function showLeaderboard() {
+            const listElement = document.getElementById('leaderboardList');
+            if (!listElement) return;
+            listElement.innerHTML = "";
+
+            if (database) {
+                // ☁️ 雲端模式
+                listElement.innerHTML = "<li class='leaderboard-item' style='justify-content:center;'>正在加載雲端數據...</li>";
+                database.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+                    listElement.innerHTML = "";
+                    let players = [];
+                    snapshot.forEach((childSnapshot) => { players.push(childSnapshot.val()); });
+                    players.reverse();
+                    renderList(players);
+                });
+            } else {
+                // 💻 本地備用模式
+                let leaderboard = JSON.parse(localStorage.getItem('birthday_leaderboard')) || [];
+                renderList(leaderboard);
+            }
+
+            function renderList(list) {
+                if (list.length === 0) {
+                    listElement.innerHTML = "<li class='leaderboard-item' style='justify-content:center;'>暫無排行紀錄</li>";
+                    return;
+                }
+                list.forEach((player, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'leaderboard-item';
+                    li.innerHTML = `<span>${index + 1}. ${player.name}</span> <span style="color:#00ff88; font-weight:bold;">${player.score} PTS</span>`;
+                    listElement.appendChild(li);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
+
+
