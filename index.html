@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>反應力大挑戰 ⚡</title>
+    <title>AimLab</title>
     <style>
         :root {
             --bg-color: #000000;       /* 黑色背景 */
@@ -229,7 +229,7 @@
 
     <!-- 頁面 1：輸入名字 -->
     <div id="pageLogin" class="page active">
-        <h1>⚡ 反應力大挑戰</h1>
+        <h1>AimLab</h1>
         <p>請輸入你的名字以加入排行榜：</p>
         <input type="text" id="usernameInput" placeholder="輸入玩家名稱..." maxlength="10">
         <button onclick="login()">進入主頁</button>
@@ -237,7 +237,7 @@
 
     <!-- 頁面 2：主功能表 -->
     <div id="pageMenu" class="page">
-        <h1>🎮 遊戲主選單</h1>
+        <h1>主選單</h1>
         <p>當前玩家：<span id="playerNameDisplay" style="font-weight:bold; color:#ff7675;"></span></p>
         <button onclick="switchPage('pageGame'); startGame();">開始遊戲</button>
         <button onclick="switchPage('pageLeaderboard'); showLeaderboard();">查看排行榜</button>
@@ -245,7 +245,7 @@
 
     <!-- 頁面 3：排行榜 -->
     <div id="pageLeaderboard" class="page">
-        <h1>🏆 全球挑戰排行榜</h1>
+        <h1>排行榜</h1>
         <ul id="leaderboardList" class="leaderboard-list"></ul>
         <button onclick="switchPage('pageMenu')">返回主選單</button>
     </div>
@@ -263,9 +263,9 @@
     <!-- 頁面 5：生日快樂頁面 (heiyi 專屬書信彩蛋) -->
     <div id="pageBirthday" class="page birthday-page-bg">
         <div class="letter-box">
-            <h1 class="letter-title">🎉 希兒，生日快樂！</h1>
+            <h1 class="letter-title">Heiyi，生日快樂！</h1>
             <div class="letter-content">
-                <p class="letter-text">致希兒：</p>
+                <p class="letter-text">致Heiyi：</p>
                 <p class="letter-text">雖然我哋認識嘅時間唔係算好長，但我就覺得你係一個幾好嘅人。</p>
                 <p class="letter-text">其實喺你生日之前，我原本諗住畫張圖送畀你當生日禮物算，打諗深一層……我畫功並非你哋呢啲常人可以欣賞，而你本身又畫得咁好，費事獻醜。所以最後我決定諗咗另一個方法，俾d驚喜畀你，希望你收到唔會嫌棄我畫功。</p>
                 <p class="letter-text">無論如何，真心祝你生日快樂、每日都遇到開心的事。</p>
