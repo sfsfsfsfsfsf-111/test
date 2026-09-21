@@ -312,7 +312,7 @@
             switchPage('pageMenu');
         }
 
-        function startGame() {
+                function startGame() {
             score = 0;
             lives = 1;
             currentCircleTime = 5000; 
@@ -408,6 +408,12 @@
             }
         }
 
+        // 🌐 jsonbin.io 專屬配置（請把引號內換成你在官網複製拿到的真實密鑰）
+        const BIN_ID = "6ab0e778ac6210605ae505f5"; 
+        const MASTER_KEY = "$2a$10$5HLn7wx/r5XFi17k/bKFNerfkk00YsH2jsH0b4Tjn83BWLy7HGXBW"; 
+        const BIN_URL = "https://jsonbin.io" + BIN_ID;
+
+        // 儲存分數：雲端優先，並在本地留存備份
         function saveScore(name, newScore) {
             let localList = JSON.parse(localStorage.getItem('birthday_leaderboard')) || [];
             const exist = localList.find(p => p.name === name);
@@ -416,12 +422,15 @@
             localList.sort((a, b) => b.score - a.score);
             localStorage.setItem('birthday_leaderboard', JSON.stringify(localList));
 
-            fetch(BIN_URL, {
-                headers: { "X-Master-Key": BIN_MASTER_KEY }
+            if (!BIN_ID || BIN_ID.includes("貼上")) return;
+
+            // 讀取目前的雲端榜單
+            fetch(BIN_URL + "/latest", {
+                headers: { "X-Master-Key": MASTER_KEY }
             })
             .then(res => res.json())
             .then(data => {
-                let cloudList = data.record || [];
+                let cloudList = data.record;
                 if (!Array.isArray(cloudList)) cloudList = [];
                 
                 const existingPlayer = cloudList.find(p => p.name === name);
@@ -432,38 +441,40 @@
                 }
                 cloudList.sort((a, b) => b.score - a.score);
                 
+                // PUT 強制寫入並儲存最新前 10 名
                 fetch(BIN_URL, {
                     method: 'PUT',
                     headers: {
                         "Content-Type": "application/json",
-                        "X-Master-Key": BIN_MASTER_KEY
+                        "X-Master-Key": MASTER_KEY
                     },
                     body: JSON.stringify(cloudList.slice(0, 10))
                 });
             })
-            .catch(err => console.log("雲端同步稍有延遲:", err));
+            .catch(e => console.error("雲端儲存失敗:", e));
         }
 
+        // 顯示排行榜：雲端優先，超時或失敗自動切回本地
         function showLeaderboard() {
             const listElement = document.getElementById('leaderboardList');
             if (!listElement) return;
-            listElement.innerHTML = "<li class='leaderboard-item' style='justify-content:center;'>📡 正在同步全球連線數據...</li>";
+            listElement.innerHTML = "<li class='leaderboard-item' style='justify-content:center;'>正在同步全球排行榜...</li>";
+
+            if (!BIN_ID || BIN_ID.includes("貼上")) { loadLocalList(); return; }
 
             let isLoaded = false;
             let timeoutValve = setTimeout(() => {
-                if (!isLoaded) {
-                    loadLocalList();
-                }
+                if (!isLoaded) loadLocalList();
             }, 3000);
 
-            fetch(BIN_URL, {
-                headers: { "X-Master-Key": BIN_MASTER_KEY }
+            fetch(BIN_URL + "/latest", {
+                headers: { "X-Master-Key": MASTER_KEY }
             })
             .then(res => res.json())
             .then(data => {
                 isLoaded = true;
                 clearTimeout(timeoutValve);
-                let cloudList = data.record || [];
+                let cloudList = data.record;
                 if (!Array.isArray(cloudList)) cloudList = [];
                 renderList(cloudList);
             })
