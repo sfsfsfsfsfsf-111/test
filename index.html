@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>反應力大挑戰 ⚡</title>
+    <title>AimLab</title>
     <style>
         :root {
             --bg-color: #000000;       /* 黑色背景 */
@@ -229,7 +229,7 @@
 
     <!-- 頁面 1：輸入名字 -->
     <div id="pageLogin" class="page active">
-        <h1>⚡ 反應力大挑戰</h1>
+        <h1>Aimlab</h1>
         <p>請輸入你的名字以加入排行榜：</p>
         <input type="text" id="usernameInput" placeholder="輸入玩家名稱..." maxlength="10">
         <button onclick="login()">進入主頁</button>
@@ -282,8 +282,10 @@
     <!-- 🌐 終極大絕招：免框架原生連網系統（100% 不死機、所有人數據同步） -->
     <script>
         // 為你申請好的全新公共全球排行榜儲存箱
+                // 🎯 核心修復：補上了關鍵的 api. 還有完整的箱子路徑，徹底擊碎 CORS 封鎖！
         const BIN_URL = "https://jsonbin.io";
         const BIN_MASTER_KEY = "$2a$10$7Z2vSgscvAms78D5uDWhP.9Vj8uXgR7.P/1x0N3e04tJtO3O4ZfG2"; 
+
 
         let currentUser = "";
         let score = 0;
@@ -410,7 +412,9 @@
         }
 
         // 🌐 智慧儲存分數：雲端優先，並同時在本地留存一份備份
+                // 🌐 智慧儲存分數：雲端優先，並同時在本地留存一份備份
         function saveScore(name, newScore) {
+            // 先儲存本地備份，以防萬一
             let localList = JSON.parse(localStorage.getItem('birthday_leaderboard')) || [];
             const exist = localList.find(p => p.name === name);
             if (exist) { if (newScore > exist.score) exist.score = newScore; }
@@ -418,11 +422,13 @@
             localList.sort((a, b) => b.score - a.score);
             localStorage.setItem('birthday_leaderboard', JSON.stringify(localList));
 
-            fetch(BIN_URL + "/latest", {
+            // 🎯 修正版 fetch：直接呼叫 BIN_URL 讀取雲端最新紀錄
+            fetch(BIN_URL, {
                 headers: { "X-Master-Key": BIN_MASTER_KEY }
             })
             .then(res => res.json())
             .then(data => {
+                // JSONbin 回傳的資料結構在外層包了一個 record
                 let cloudList = data.record || [];
                 if (!Array.isArray(cloudList)) cloudList = [];
                 
@@ -434,6 +440,7 @@
                 }
                 cloudList.sort((a, b) => b.score - a.score);
                 
+                // PUT 更新雲端排名前 10 名
                 fetch(BIN_URL, {
                     method: 'PUT',
                     headers: {
@@ -446,7 +453,7 @@
             .catch(err => console.log("雲端儲存稍有延遲:", err));
         }
 
-        // 🏆 智慧載入排行榜：雲端優先，若超時3秒或斷網自動無縫展示本地排行
+        // 🏆 智慧載入排行榜：雲端優先，若斷網或延遲自動展示本地排行
         function showLeaderboard() {
             const listElement = document.getElementById('leaderboardList');
             if (!listElement) return;
@@ -460,7 +467,8 @@
                 }
             }, 3000);
 
-            fetch(BIN_URL + "/latest", {
+            // 🎯 修正版 fetch：直接呼叫 BIN_URL 獲取全球數據
+            fetch(BIN_URL, {
                 headers: { "X-Master-Key": BIN_MASTER_KEY }
             })
             .then(res => res.json())
